@@ -1,28 +1,13 @@
 *==============================================================================
 * Title:   Descriptive dataset description  ->  LaTeX tables for Overleaf
-* Aim:     booktabs tables (mostly ONE COLUMN PER YEAR, 2018-2024).
-* Logic:   uses $output/ALL_POV_IND_SILC_PrePost_HH.dta, weighted with dwt.
 * Output:  "$descout/silc_descriptives.txt"  ->  paste into Overleaf
-* LaTeX:   requires \usepackage{booktabs} and \usepackage{graphicx} (UTF-8)
-* RUN with:  do "...\silc_descriptives_overleaf.do"   (do NOT paste line by line)
-*
-*------------------------------------------------------------------------------
-* CODEBOOK CHECK (EU-SILC cross-sec 2018 vs 2024) -- variables that BREAK in 2021:
-*   Self-defined economic status: PL031 (<=2020) -> PL032 (2021+), coding differs:
-*     <=2020 PL031: 1,2=employee FT/PT; 3,4=self-empl FT/PT; 5=unempl; 6=student;
-*                   7=retired; 8=disabled; 9=military; 10=domestic; 11=other
-*     2021+  PL032: 1=employed; 2=unempl; 3=retired; 4=unable; 5=student;
-*                   6=domestic; 7=military; 8=other  (NO employee/self-empl split!)
-*     -> employee vs self-employed split taken from emp_status (status in empl., 3=employee)
-*   Education: PE040 (<=2020, ISCED x100: <300 / 300-499 / 500+)
-*           -> PE041 (2021+, ISCED 0-8 or x10) ; mapped to Low/Medium/High
-*   Income:  PY010G employee gross + PY050G self-employment gross = market income
-*   Stable:  RB050/PB040 weight, RX010 age, PB150 sex, HX090 post, HY023 pre, HX050
+* LaTeX:   requires \usepackage{booktabs}, \usepackage{graphicx},
+*          \usepackage{longtable}, \usepackage{array}  (UTF-8)
+* RUN with:  do "...\silc_descriptives_overleaf.do"
 *==============================================================================
 clear all
 set more off
 
-*--- PATHS --- PLEASE CHECK (folder that contains the .dta, not a filename) -----
 global output  "E:\InWorkPoverty_SILC"
 global descout "E:\InWorkPoverty_SILC"
 
@@ -36,7 +21,7 @@ use "$output/ALL_POV_IND_SILC_PrePost_HH.dta", clear
 local years "2018 2019 2020 2021 2022 2023 2024"
 
 *--- Destring raw variables we need (if present and string) --------------------
-foreach v in PL031 PL032 PE040 PE041 PY010G PY050G {
+foreach v in RB090 PL031 PL032 PE040 PE041 PY010G PY050G {
     capture confirm variable `v'
     if _rc == 0 {
         capture confirm string variable `v'
@@ -47,10 +32,19 @@ foreach v in PL031 PL032 PE040 PE041 PY010G PY050G {
     }
 }
 
+*--- Sex from RB090 (register sex, ALL persons; PB150 only covers 16+) ---------
+capture confirm variable RB090
+if _rc == 0 {
+    gen byte sexr = RB090
+}
+else {
+    gen byte sexr = sex
+}
+label define sexr_lbl 1 "Male" 2 "Female"
+label values sexr sexr_lbl
+
 *--- ILO working age 15-64 + age bands -----------------------------------------
 gen byte wa = (age>=15 & age<=64)
-label variable wa "Working age 15-64 (ILO)"
-
 gen byte ageband = .
 replace ageband = 1 if age < 15
 replace ageband = 2 if age>=15 & age<18
@@ -90,30 +84,26 @@ if `hasPL032' {
     replace econ = 4 if year>=2021 & PL032==5
     replace econ = 5 if year>=2021 & inlist(PL032,4,6,7,8)
 }
-local haveecon = 0
-qui count if !missing(econ)
-if r(N) > 0 local haveecon = 1
 
-*--- Education (harmonised): 1 Low (ISCED 0-2) | 2 Medium (3-4) | 3 High (5-8) --
+*--- Education: scale-robust ISCED -> Low/Medium/High --------------------------
+* Works whether ISCED is coded 0-8, x10 (0-80), or x100 (0-800).
+gen double isced_raw = .
 capture confirm variable PE040
-local hasPE040 = (_rc==0)
+if _rc == 0 {
+    replace isced_raw = PE040 if !missing(PE040) & PE040>=0
+}
 capture confirm variable PE041
-local hasPE041 = (_rc==0)
+if _rc == 0 {
+    replace isced_raw = PE041 if !missing(PE041) & PE041>=0
+}
+gen byte isced_lvl = .
+replace isced_lvl = floor(isced_raw/100) if isced_raw>=100 & !missing(isced_raw)
+replace isced_lvl = floor(isced_raw/10)  if isced_raw>=10  & isced_raw<100
+replace isced_lvl = isced_raw            if isced_raw>=0   & isced_raw<10
 gen byte edu = .
-if `hasPE040' {
-    replace edu = 1 if year<=2020 & PE040>=0   & PE040<300
-    replace edu = 2 if year<=2020 & PE040>=300 & PE040<500
-    replace edu = 3 if year<=2020 & PE040>=500 & !missing(PE040)
-}
-if `hasPE041' {
-    tempvar pe41n
-    gen double `pe41n' = PE041 if year>=2021 & PE041>=0
-    replace `pe41n' = `pe41n'*10 if year>=2021 & PE041<10 & PE041>=0
-    replace edu = 1 if year>=2021 & `pe41n'>=0  & `pe41n'<30
-    replace edu = 2 if year>=2021 & `pe41n'>=30 & `pe41n'<50
-    replace edu = 3 if year>=2021 & `pe41n'>=50 & !missing(`pe41n')
-    drop `pe41n'
-}
+replace edu = 1 if isced_lvl>=0 & isced_lvl<=2
+replace edu = 2 if isced_lvl>=3 & isced_lvl<=4
+replace edu = 3 if isced_lvl>=5 & isced_lvl<=8
 local haveedu = 0
 qui count if !missing(edu)
 if r(N) > 0 local haveedu = 1
@@ -129,7 +119,6 @@ if _rc == 0 {
     }
     replace mkt_ind = . if age<15 | age>64
     replace mkt_ind = . if mkt_ind<=0
-    label variable mkt_ind "Individual market income (PY010G+PY050G), 15-64, >0"
     local havemkt = 1
 }
 
@@ -142,17 +131,28 @@ forvalues j = 1/`ncol' {
     local colspec "`colspec'r"
 }
 
+*--- Household type labels -----------------------------------------------------
+local hl1 "1 adult"
+local hl2 "1 adult + 1 child"
+local hl3 "1 adult + 2+ children"
+local hl4 "2 adults"
+local hl5 "2 adults + 1 child"
+local hl6 "2 adults + 2 children"
+local hl7 "2 adults + 3+ children"
+local hl8 "3+ adults"
+local hl9 "3+ adults with children"
+
 *==============================================================================
 * OPEN OUTPUT FILE
 *==============================================================================
 capture mkdir "$descout"
 file open tex using "$descout/silc_descriptives.txt", write replace text
 local eol "\\"
-file write tex "% Auto-generated from EU-SILC Austria (Stata). Requires booktabs + graphicx (UTF-8)." _n
+file write tex "% Auto-generated from EU-SILC Austria. Requires: booktabs, graphicx, longtable, array (UTF-8)." _n
 file write tex "" _n
 
 *==============================================================================
-* TABLE 1 - Sample overview
+* TABLE - Sample overview
 *==============================================================================
 foreach yr of local years {
     qui count if year==`yr'
@@ -196,10 +196,11 @@ file write tex "`row' `eol'" _n
 file write tex "\bottomrule" _n
 file write tex "\end{tabular}}" _n
 file write tex "\end{table}" _n
+file write tex "\bigskip" _n
 file write tex "" _n
 
 *==============================================================================
-* TABLE 3.2 - Sample composition: labour force + economic status (ages 15-64)
+* TABLE - Sample composition: labour force + economic status (ages 15-64)
 *==============================================================================
 foreach yr of local years {
     qui sum dwt if year==`yr' & wa==1
@@ -232,7 +233,6 @@ foreach yr of local years {
 }
 file write tex "`hdr' `eol'" _n
 file write tex "\midrule" _n
-
 file write tex "\multicolumn{`ncoltot'}{l}{\textit{Population, ages 15--64 (1{,}000, weighted)}} `eol'" _n
 local row "Total (15--64)"
 foreach yr of local years {
@@ -276,7 +276,6 @@ foreach yr of local years {
     local row "`row' & `cell'"
 }
 file write tex "`row' `eol'" _n
-
 file write tex "\addlinespace" _n
 file write tex "\multicolumn{`ncoltot'}{l}{\textit{Self-defined economic status, ages 15--64 (share \%)}} `eol'" _n
 local ecl1 "Employed"
@@ -294,21 +293,23 @@ forvalues e = 1/5 {
 }
 file write tex "\bottomrule" _n
 file write tex "\end{tabular}}" _n
-file write tex "{\footnotesize \textit{Notes:} Economic status harmonised across the 2021 EU-SILC break (PL031/PL032). Employee vs self-employed from status in employment (PL040/PL040A, code 3 = employee); employed with missing status not allocated.}" _n
 file write tex "\end{table}" _n
+file write tex "\bigskip" _n
 file write tex "" _n
 
 *==============================================================================
-* TABLE 3.3 - Sociodemographic structure (shares in %), by year
+* TABLE - Sociodemographic structure (shares in %), by year
 *==============================================================================
 foreach yr of local years {
     qui sum dwt if year==`yr'
     local pt_`yr' = r(sum)
-    qui sum dwt if year==`yr' & age>=25 & age<=64
-    local pt2564_`yr' = r(sum)
+    qui sum dwt if year==`yr' & !missing(sexr)
+    local psb_`yr' = r(sum)
+    qui sum dwt if year==`yr' & age>=25 & age<=64 & !missing(edu)
+    local peb_`yr' = r(sum)
     forvalues s = 1/2 {
-        qui sum dwt if year==`yr' & sex==`s'
-        local shsex`s'_`yr' = 100*r(sum)/`pt_`yr''
+        qui sum dwt if year==`yr' & sexr==`s'
+        local shsex`s'_`yr' = 100*r(sum)/`psb_`yr''
     }
     forvalues a = 1/8 {
         qui sum dwt if year==`yr' & ageband==`a'
@@ -316,7 +317,7 @@ foreach yr of local years {
     }
     forvalues e = 1/3 {
         qui sum dwt if year==`yr' & edu==`e' & age>=25 & age<=64
-        local shedu`e'_`yr' = 100*r(sum)/`pt2564_`yr''
+        local shedu`e'_`yr' = 100*r(sum)/`peb_`yr''
     }
     forvalues h = 1/9 {
         qui sum dwt if year==`yr' & hh_type==`h'
@@ -336,7 +337,6 @@ foreach yr of local years {
 }
 file write tex "`hdr' `eol'" _n
 file write tex "\midrule" _n
-
 file write tex "\multicolumn{`ncoltot'}{l}{\textit{Sex}} `eol'" _n
 local sl1 "Male"
 local sl2 "Female"
@@ -349,7 +349,6 @@ forvalues s = 1/2 {
     file write tex "`row' `eol'" _n
 }
 file write tex "\addlinespace" _n
-
 file write tex "\multicolumn{`ncoltot'}{l}{\textit{Age groups}} `eol'" _n
 forvalues a = 1/8 {
     local row "\quad `abl`a''"
@@ -360,7 +359,6 @@ forvalues a = 1/8 {
     file write tex "`row' `eol'" _n
 }
 file write tex "\addlinespace" _n
-
 if `haveedu' {
     file write tex "\multicolumn{`ncoltot'}{l}{\textit{Education, ages 25--64 (ISCED)}} `eol'" _n
     local edl1 "Low (ISCED 0--2)"
@@ -376,17 +374,7 @@ if `haveedu' {
     }
     file write tex "\addlinespace" _n
 }
-
 file write tex "\multicolumn{`ncoltot'}{l}{\textit{Household type}} `eol'" _n
-local hl1 "1 adult"
-local hl2 "1 adult + 1 child"
-local hl3 "1 adult + 2+ children"
-local hl4 "2 adults"
-local hl5 "2 adults + 1 child"
-local hl6 "2 adults + 2 children"
-local hl7 "2 adults + 3+ children"
-local hl8 "3+ adults"
-local hl9 "3+ adults with children"
 forvalues h = 1/9 {
     local row "\quad `hl`h''"
     foreach yr of local years {
@@ -397,16 +385,27 @@ forvalues h = 1/9 {
 }
 file write tex "\bottomrule" _n
 file write tex "\end{tabular}}" _n
-file write tex "{\footnotesize \textit{Notes:} Shares of the weighted total population per year; education as share of the weighted 25--64 population. Education harmonised across the 2021 break (PE040/PE041).}" _n
 file write tex "\end{table}" _n
+file write tex "\bigskip" _n
 file write tex "" _n
 
 *==============================================================================
-* TABLE 3.4a - Individual market income (pre-transfer) deciles, by sex
-*              ONE TABLE PER YEAR
+* TABLE - Individual market income (pre-transfer) by decile, sex and year
+*         ONE long table; year as panel
 *==============================================================================
 if `havemkt' {
+    file write tex "\begin{longtable}{lrrr||rrr}" _n
+    file write tex "\caption{Individual market income (pre-transfer) by decile, sex and year (EUR/year)}\label{tab:silc_mktinc}`eol'" _n
+    file write tex "\toprule" _n
+    file write tex "Decile & Median & N men & N women & Men (1{,}000) & Women (1{,}000) & Share \% `eol'" _n
+    file write tex "\midrule \endfirsthead" _n
+    file write tex "\toprule" _n
+    file write tex "Decile & Median & N men & N women & Men (1{,}000) & Women (1{,}000) & Share \% `eol'" _n
+    file write tex "\midrule \endhead" _n
+
     foreach yr of local years {
+        qui sum dwt if year==`yr' & !missing(mkt_ind)
+        local mbase = r(sum)
         _pctile mkt_ind [pw=dwt] if year==`yr' & !missing(mkt_ind), p(10 20 30 40 50 60 70 80 90)
         forvalues k = 1/9 {
             local cut`k' = r(r`k')
@@ -420,91 +419,104 @@ if `havemkt' {
         }
         replace `dec' = 10 if year==`yr' & mkt_ind > `cut9' & !missing(mkt_ind)
 
-        file write tex "\begin{table}[htbp]\centering\footnotesize" _n
-        file write tex "\caption{Individual market income (pre-transfer), deciles by sex -- `yr' (ages 15--64, market income $>$0)}" _n
-        file write tex "\label{tab:silc_mktinc_`yr'}" _n
-        file write tex "\begin{tabular}{lrrrrr}" _n
-        file write tex "\toprule" _n
-        file write tex "Decile & Median (EUR) & Men: N & Men (1{,}000) & Women: N & Women (1{,}000) `eol'" _n
-        file write tex "\midrule" _n
+        file write tex "\multicolumn{7}{l}{\textbf{`yr'}} `eol'" _n
         forvalues d = 1/10 {
             _pctile mkt_ind [pw=dwt] if `dec'==`d', p(50)
             local med = r(r1)
-            qui count if `dec'==`d' & sex==1
+            qui count if `dec'==`d' & sexr==1
             local nm = r(N)
-            qui sum dwt if `dec'==`d' & sex==1
+            qui sum dwt if `dec'==`d' & sexr==1
             local pm = r(sum)/1000
-            qui count if `dec'==`d' & sex==2
+            qui count if `dec'==`d' & sexr==2
             local nf = r(N)
-            qui sum dwt if `dec'==`d' & sex==2
+            qui sum dwt if `dec'==`d' & sexr==2
             local pf = r(sum)/1000
+            qui sum dwt if `dec'==`d'
+            local sh = 100*r(sum)/`mbase'
             local cMed = cond(missing(`med'), "--", trim(strofreal(`med', "%12.0fc")))
             local cNm  = trim(strofreal(`nm', "%12.0fc"))
-            local cPm  = trim(strofreal(`pm', "%9.1fc"))
             local cNf  = trim(strofreal(`nf', "%12.0fc"))
+            local cPm  = trim(strofreal(`pm', "%9.1fc"))
             local cPf  = trim(strofreal(`pf', "%9.1fc"))
-            file write tex "D`d' & `cMed' & `cNm' & `cPm' & `cNf' & `cPf' `eol'" _n
+            local cSh  = trim(strofreal(`sh', "%4.1f"))
+            file write tex "D`d' & `cMed' & `cNm' & `cNf' & `cPm' & `cPf' & `cSh' `eol'" _n
         }
-        file write tex "\bottomrule" _n
-        file write tex "\end{tabular}" _n
-        file write tex "{\footnotesize \textit{Notes:} Decile cut-offs on the pooled (both sexes) distribution, person-weighted. N = survey count (unweighted); 1{,}000 = grossed-up population.}" _n
-        file write tex "\end{table}" _n
-        file write tex "" _n
+        file write tex "\addlinespace" _n
         drop `dec'
     }
+    file write tex "\bottomrule" _n
+    file write tex "\end{longtable}" _n
+    file write tex "\bigskip" _n
+    file write tex "" _n
 }
 
 *==============================================================================
-* TABLE 3.4b - Equivalised HH income deciles (pre & post-transfer)
-*              ONE TABLE PER YEAR
+* TABLES - Equivalised HH income by decile: PRE and POST (one each, year panels)
 *==============================================================================
-foreach yr of local years {
-    _pctile eq_hh_post [pw=dwt] if year==`yr' & !missing(eq_hh_post), p(10 20 30 40 50 60 70 80 90)
-    forvalues k = 1/9 {
-        local cut`k' = r(r`k')
+foreach inc in pre post {
+    if "`inc'"=="pre" {
+        local incvar "eq_hh_pre"
+        local inctit "before social transfers (pensions incl.)"
+        local inclab "tab:silc_hhinc_pre"
     }
-    tempvar dec
-    gen byte `dec' = .
-    replace `dec' = 1 if year==`yr' & eq_hh_post <= `cut1' & !missing(eq_hh_post)
-    forvalues k = 2/9 {
-        local km1 = `k' - 1
-        replace `dec' = `k' if year==`yr' & eq_hh_post > `cut`km1'' & eq_hh_post <= `cut`k''
+    else {
+        local incvar "eq_hh_post"
+        local inctit "disposable (post-transfer)"
+        local inclab "tab:silc_hhinc_post"
     }
-    replace `dec' = 10 if year==`yr' & eq_hh_post > `cut9' & !missing(eq_hh_post)
 
-    file write tex "\begin{table}[htbp]\centering\footnotesize" _n
-    file write tex "\caption{Equivalised household income by decile -- `yr' (post-transfer deciles, EUR/year)}" _n
-    file write tex "\label{tab:silc_hhinc_`yr'}" _n
-    file write tex "\begin{tabular}{lrrrr}" _n
+    file write tex "\begin{longtable}{lrr||rr}" _n
+    file write tex "\caption{Equivalised household income `inctit', by decile and year (EUR/year)}\label{`inclab'}`eol'" _n
     file write tex "\toprule" _n
-    file write tex "Decile & Median post & Median pre & N (survey) & Pop (1{,}000) `eol'" _n
-    file write tex "\midrule" _n
-    forvalues d = 1/10 {
-        _pctile eq_hh_post [pw=dwt] if `dec'==`d', p(50)
-        local medpo = r(r1)
-        _pctile eq_hh_pre [pw=dwt] if `dec'==`d' & !missing(eq_hh_pre), p(50)
-        local medpr = r(r1)
-        qui count if `dec'==`d'
-        local nn = r(N)
-        qui sum dwt if `dec'==`d'
-        local pp = r(sum)/1000
-        local cPo = cond(missing(`medpo'), "--", trim(strofreal(`medpo', "%12.0fc")))
-        local cPr = cond(missing(`medpr'), "--", trim(strofreal(`medpr', "%12.0fc")))
-        local cN  = trim(strofreal(`nn', "%12.0fc"))
-        local cP  = trim(strofreal(`pp', "%9.1fc"))
-        file write tex "D`d' & `cPo' & `cPr' & `cN' & `cP' `eol'" _n
+    file write tex "Decile & Median & N & Weighted (1{,}000) & Share \% `eol'" _n
+    file write tex "\midrule \endfirsthead" _n
+    file write tex "\toprule" _n
+    file write tex "Decile & Median & N & Weighted (1{,}000) & Share \% `eol'" _n
+    file write tex "\midrule \endhead" _n
+
+    foreach yr of local years {
+        qui sum dwt if year==`yr' & !missing(`incvar')
+        local hbase = r(sum)
+        _pctile `incvar' [pw=dwt] if year==`yr' & !missing(`incvar'), p(10 20 30 40 50 60 70 80 90)
+        forvalues k = 1/9 {
+            local cut`k' = r(r`k')
+        }
+        tempvar dec
+        gen byte `dec' = .
+        replace `dec' = 1 if year==`yr' & `incvar' <= `cut1' & !missing(`incvar')
+        forvalues k = 2/9 {
+            local km1 = `k' - 1
+            replace `dec' = `k' if year==`yr' & `incvar' > `cut`km1'' & `incvar' <= `cut`k''
+        }
+        replace `dec' = 10 if year==`yr' & `incvar' > `cut9' & !missing(`incvar')
+
+        file write tex "\multicolumn{5}{l}{\textbf{`yr'}} `eol'" _n
+        forvalues d = 1/10 {
+            _pctile `incvar' [pw=dwt] if `dec'==`d', p(50)
+            local med = r(r1)
+            qui count if `dec'==`d'
+            local nn = r(N)
+            qui sum dwt if `dec'==`d'
+            local pp = r(sum)/1000
+            qui sum dwt if `dec'==`d'
+            local sh = 100*r(sum)/`hbase'
+            local cMed = cond(missing(`med'), "--", trim(strofreal(`med', "%12.0fc")))
+            local cN   = trim(strofreal(`nn', "%12.0fc"))
+            local cP   = trim(strofreal(`pp', "%9.1fc"))
+            local cSh  = trim(strofreal(`sh', "%4.1f"))
+            file write tex "D`d' & `cMed' & `cN' & `cP' & `cSh' `eol'" _n
+        }
+        file write tex "\addlinespace" _n
+        drop `dec'
     }
     file write tex "\bottomrule" _n
-    file write tex "\end{tabular}" _n
-    file write tex "{\footnotesize \textit{Notes:} Deciles of equivalised disposable (post-transfer) income, person-weighted. Pre = HY023 (before social transfers, pensions incl.). N = survey count; Pop = grossed-up (1{,}000).}" _n
-    file write tex "\end{table}" _n
+    file write tex "\end{longtable}" _n
+    file write tex "\bigskip" _n
     file write tex "" _n
-    drop `dec'
 }
 
 *==============================================================================
-* TABLE 3.4c - Median equivalised HH income by household type (pre & post)
-*              years as columns
+* TABLE - Median equivalised HH income by household type and year
 *==============================================================================
 foreach yr of local years {
     forvalues h = 1/9 {
@@ -527,7 +539,6 @@ foreach yr of local years {
 }
 file write tex "`hdr' `eol'" _n
 file write tex "\midrule" _n
-
 file write tex "\multicolumn{`ncoltot'}{l}{\textit{Median disposable income (post-transfer)}} `eol'" _n
 forvalues h = 1/9 {
     local row "\quad `hl`h''"
@@ -549,7 +560,6 @@ forvalues h = 1/9 {
 }
 file write tex "\bottomrule" _n
 file write tex "\end{tabular}}" _n
-file write tex "{\footnotesize \textit{Notes:} Person-weighted medians of equivalised household income. Household type `Other' (type 10) omitted.}" _n
 file write tex "\end{table}" _n
 file write tex "" _n
 
