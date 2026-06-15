@@ -114,7 +114,7 @@ if _rc == 0 {
     if _rc == 0 {
         replace mkt_ind = mkt_ind + cond(missing(PY050G),0,PY050G)
     }
-    replace mkt_ind = . if econ!=1      // employed persons only (self-defined status)
+    replace mkt_ind = . if econ!=1
     replace mkt_ind = . if mkt_ind<=0
     local havemkt = 1
 }
