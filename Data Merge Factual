@@ -11,7 +11,7 @@ set more off
 ****************************************************************************************************
 
 global input  "Y:/Desktop/USB/18.05.2026/EUROMOD/InWorkPoverty/EUROMOD_RELEASES_J1.86+/Factual_MA_II/Output"
-global output "Y:/Desktop/USB/18.05.2026/EUROMOD/MA_II_Stata_Output/Factual"
+global output "Y:/Desktop/USB/18.05.2026/EUROMOD/MA_II_Stata_Output"
 
 capture mkdir "$output"
 
