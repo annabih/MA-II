@@ -1,27 +1,56 @@
+****************************************************************************************************
+* Title: Create one combined EUROMOD / SILC descriptive dataset
+* Aim:   Import yearly txt files, append all years, save as one .dta file
+****************************************************************************************************
+
 clear all
 set more off
 
-global input "Y:\Desktop\USB\18.05.2026\EUROMOD\InWorkPoverty\EUROMOD_RELEASES_J1.86+\Factual_MA_II\Output"
-global output "Y:\Desktop\USB\18.05.2026\EUROMOD\MA_II_Stata_Output"
+****************************************************************************************************
+* 1. Define paths
+****************************************************************************************************
 
-local years "2018 2019 2020 2021 2022"
+global input  "Y:/Desktop/USB/18.05.2026/EUROMOD/InWorkPoverty/EUROMOD_RELEASES_J1.86+/Factual_MA_II/Output"
+global output "Y:/Desktop/USB/18.05.2026/EUROMOD/MA_II_Stata_Output/Factual"
+
+capture mkdir "$output"
+
+****************************************************************************************************
+* 2. Define years
+****************************************************************************************************
+
+local years "2018 2019 2020 2021 2022 2023 2024"
+
+****************************************************************************************************
+* 3. Import yearly txt files and append them
+****************************************************************************************************
 
 tempfile alldata
-local first = 1
+local first_year = 1
 
 foreach yr of local years {
 
-    di _n "=== Importing year `yr' ==="
+    di _n "==============================================================================="
+    di "Importing year `yr'"
+    di "==============================================================================="
 
-    import delimited using "$input/`yr'.txt", clear case(preserve)
+    local file "$input/`yr'.txt"
 
-    gen year = `yr'
+    capture confirm file "`file'"
+    if _rc {
+        di as error "File not found: `file'"
+        exit 601
+    }
 
-    di "Year `yr': " _N " observations"
+    import delimited using "`file'", clear case(preserve) stringcols(_all)
 
-    if `first' == 1 {
+    gen int year = `yr'
+
+    di as result "Year `yr' imported: " _N " observations and " c(k) " variables."
+
+    if `first_year' == 1 {
         save `alldata', replace
-        local first = 0
+        local first_year = 0
     }
     else {
         append using `alldata'
@@ -29,10 +58,49 @@ foreach yr of local years {
     }
 }
 
+****************************************************************************************************
+* 4. Load combined data before saving
+****************************************************************************************************
+
+* WICHTIG: Load the combined data before saving!
 use `alldata', clear
 
-save "$output/EUROMOD_Factual_AllYears_2018_2022.dta", replace
+****************************************************************************************************
+* 5. Convert numeric string variables back to numeric where possible
+****************************************************************************************************
 
-di _n "Complete."
-di "Total observations: " _N
+ds, has(type string)
+local stringvars `r(varlist)'
+
+foreach v of local stringvars {
+
+    capture destring `v', replace
+
+    if _rc {
+        capture replace `v' = subinstr(`v', ",", ".", .)
+        capture destring `v', replace
+    }
+}
+
+compress
+sort year
+
+****************************************************************************************************
+* 6. Save final combined dataset
+****************************************************************************************************
+
+* Save final combined dataset
+save "$output/MA_II_EUROMOD_DESCRIPTIVE.dta", replace
+
+****************************************************************************************************
+* 7. Check final dataset
+****************************************************************************************************
+
+di _n "==============================================================================="
+di as result "COMPLETE"
+di as result "Saved file: $output/MA_II_EUROMOD_DESCRIPTIVE.dta"
+di as result "Total observations: " _N
+di as result "Total variables: " c(k)
+di "==============================================================================="
+
 tab year
