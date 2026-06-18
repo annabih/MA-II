@@ -1,0 +1,49 @@
+*******************************************************************************************************************************************************************************************
+*** Titel: Append all EUROMOD processed output files (2018-2022)
+*** Date: 18.06.2026
+*** Aim: Create single dataset with all years
+*******************************************************************************************************************************************************************************************
+clear all
+set more off
+
+*************************************************
+*** Create one full dataset
+*************************************************
+global input "Y:\Desktop\USB\MA_II\EUROMOD_Baseline"
+global output "Y:\Desktop\USB\MA_II\EUROMOD_Baseline"
+
+* Import first file
+import delimited "$input/at_2018_std.txt", clear stringcols(_all)
+gen year = 2018
+tempfile alldata
+save `alldata', replace
+
+* Append 2019
+import delimited "$input/at_2019_std.txt", clear stringcols(_all)
+gen year = 2019
+append using `alldata'
+save `alldata', replace
+
+* Append 2020
+import delimited "$input/at_2020_std.txt", clear stringcols(_all)
+gen year = 2020
+append using `alldata'
+save `alldata', replace
+
+* Append 2021
+import delimited "$input/at_2021_std.txt", clear stringcols(_all)
+gen year = 2021
+append using `alldata'
+save `alldata', replace
+
+* Append 2022
+import delimited "$input/at_2022_std.txt", clear stringcols(_all)
+gen year = 2022
+append using `alldata'
+save `alldata', replace
+
+* Save combined dataset
+save "$output/EUROMOD_baseline_output.dta", replace
+
+di "Complete! Total observations: " _N
+tab year
