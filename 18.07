@@ -48,10 +48,19 @@ gen double oecd_scale = 1 + 0.5 * (n_adult14 - 1) + 0.3 * n_child_u14 if n_adult
 label variable oecd_scale "OECD equivalence scale"
 
 * Construct equalised pre and post transfer disposable householde income
-gen double post_disp_hh_income_equ = max(post_disp_hh_income / oecd_scale, 0)
+gen double post_disp_hh_income_equ = post_disp_hh_income
 gen double pre_disp_hh_income_equ  = max(pre_disp_hh_income  / oecd_scale, 0)
 
 * Labels
 label variable post_disp_hh_income_equ "Post transfer disposable household income equalised"
 label variable pre_disp_hh_income_equ  "Pre transfer disposable household income equalised, pensions included"
+
+
+
+
+
+
+
+
+
 
