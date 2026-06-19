@@ -1,0 +1,16 @@
+* Baseline-Datensatz als Master laden
+use "Y:\Desktop\USB\MA_II\EUROMOD_Baseline\EUROMOD_baseline_output.dta", clear
+
+* Policy-Datensatz anhängen und Kennvariable erzeugen
+append using "Y:\Desktop\USB\MA_II\EUROMOD_Policy\EUROMOD_baseline_policy_output.dta", generate(scenario)
+
+* Variable beschriften
+label define scen 0 "baseline" 1 "policy"
+label values scenario scen
+label variable scenario "Szenario (baseline vs. policy)"
+
+* Kontrolle
+tab scenario
+
+* Kombinierten Datensatz speichern
+save "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined.dta", replace
