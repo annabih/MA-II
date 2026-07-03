@@ -8,61 +8,10 @@ set more off
 
 use "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined_adjusted.dta", clear
 
-
-********************************************************************************
-* Employed variable
-********************************************************************************
-destring les, replace
-
-gen employed = 0
-replace employed = 1 if les == 3
-
-label variable employed "Employed persons"
-
-
-
-********************************************************************************
-* Poverty indicators: relative / floating threshold
-********************************************************************************
-
-gen byte poor_pre_rel = pre_disp_hh_income_equ < poverty_threshold_rel ///
-    if employed == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_rel)
-
-gen byte poor_post_rel = post_disp_hh_income_equ < poverty_threshold_rel ///
-    if employed == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_rel)
-
-label variable poor_pre_rel ///
-    "Below relative poverty threshold, pre-transfer income"
-
-label variable poor_post_rel ///
-    "Below relative poverty threshold, post-transfer income"
-
-
-********************************************************************************
-* Poverty indicators: anchored baseline threshold
-********************************************************************************
-
-gen byte poor_pre_anchor = pre_disp_hh_income_equ < poverty_threshold_anchor ///
-    if employed == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_anchor)
-
-gen byte poor_post_anchor = post_disp_hh_income_equ < poverty_threshold_anchor ///
-    if employed == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_anchor)
-
-label variable poor_pre_anchor ///
-    "Below anchored baseline poverty threshold, pre-transfer income"
-
-label variable poor_post_anchor ///
-    "Below anchored baseline poverty threshold, post-transfer income"
-
-
-
-
-*** Höhe Poverty Threshold 
+*** N numbers
 *******************************************************************************************************************************************************************************************
+table year scenario if employed == 1, statistic(sum poor_pre_rel) statistic(sum poor_post_rel) statistic(sum diff_rel) statistic(sum poor_pre_anchor) statistic(sum poor_post_anchor) statistic(sum diff_anchor) statistic(sum threshold_effect_pre) statistic(sum threshold_effect_post) nototals
 
-table year scenario if inlist(scenario, 0, 1), statistic(mean threshold) statistic(min threshold) statistic(max threshold)
-
-
-table scenario year if les == "3" [aw=dwt], stat(mean pre_arop_rel pre_arop_anchor post_arop_rel post_arop_anchor)
-
-
+*** Weighted population numbers
+*******************************************************************************************************************************************************************************************
+table year scenario if employed == 1 [pw=dwt], statistic(sum poor_pre_rel) statistic(sum poor_post_rel) statistic(sum diff_rel) statistic(sum poor_pre_anchor) statistic(sum poor_post_anchor) statistic(sum diff_anchor) statistic(sum threshold_effect_pre) statistic(sum threshold_effect_post) nototals nformat(%12.0fc sum)
