@@ -182,6 +182,47 @@ label variable threshold_effect_pre  "Threshold effect pre"
 label variable threshold_effect_post "Threshold effect post"
 label variable threshold_effect_diff "Threshold effect diff"
 
+********************************************************************************
+* AROP indicators, total population: relative / floating threshold
+********************************************************************************
+
+gen byte arop_pre_rel = pre_disp_hh_income_equ < poverty_threshold_rel if !missing(pre_disp_hh_income_equ, poverty_threshold_rel)
+gen byte arop_post_rel = post_disp_hh_income_equ < poverty_threshold_rel if !missing(post_disp_hh_income_equ, poverty_threshold_rel)
+
+label variable arop_pre_rel "AROP total pop, pre-transfer, relative threshold"
+label variable arop_post_rel "AROP total pop, post-transfer, relative threshold"
+
+
+********************************************************************************
+* AROP indicators, total population: anchored baseline threshold
+********************************************************************************
+
+gen byte arop_pre_anchor = pre_disp_hh_income_equ < poverty_threshold_anchor if !missing(pre_disp_hh_income_equ, poverty_threshold_anchor)
+gen byte arop_post_anchor = post_disp_hh_income_equ < poverty_threshold_anchor if !missing(post_disp_hh_income_equ, poverty_threshold_anchor)
+
+label variable arop_pre_anchor "AROP total pop, pre-transfer, anchored threshold"
+label variable arop_post_anchor "AROP total pop, post-transfer, anchored threshold"
+
+
+********************************************************************************
+* AROP differences and threshold effects, total population
+********************************************************************************
+
+gen byte arop_diff_rel = arop_pre_rel - arop_post_rel
+gen byte arop_diff_anchor = arop_pre_anchor - arop_post_anchor
+gen byte arop_threshold_effect_pre = arop_pre_rel - arop_pre_anchor
+gen byte arop_threshold_effect_post = arop_post_rel - arop_post_anchor
+gen byte arop_threshold_effect_diff = arop_diff_rel - arop_diff_anchor
+
+label variable arop_diff_rel "AROP diff pre - post, relative threshold"
+label variable arop_diff_anchor "AROP diff pre - post, anchored threshold"
+label variable arop_threshold_effect_pre "AROP threshold effect pre"
+label variable arop_threshold_effect_post "AROP threshold effect post"
+label variable arop_threshold_effect_diff "AROP threshold effect diff"
+
+
+
+
 
 save "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined_adjusted.dta", replace
 
