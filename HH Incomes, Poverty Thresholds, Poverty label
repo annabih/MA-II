@@ -138,34 +138,34 @@ label variable employed "Employed persons"
 * Poverty indicators: relative / floating threshold
 ********************************************************************************
 
-gen byte poor_pre_rel = pre_disp_hh_income_equ < poverty_threshold_rel if employed == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_rel)
+gen byte iw_arop_pre_rel = pre_disp_hh_income_equ < poverty_threshold_rel if employed == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_rel)
 
-gen byte poor_post_rel = post_disp_hh_income_equ < poverty_threshold_rel if employed == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_rel)
+gen byte iw_poor_post_rel = post_disp_hh_income_equ < poverty_threshold_rel if employed == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_rel)
 
-label variable poor_pre_rel "Below relative poverty threshold, pre-transfer income"
+label variable iw_arop_pre_rel "Below relative poverty threshold, pre-transfer income"
 
-label variable poor_post_rel "Below relative poverty threshold, post-transfer income"
+label variable iw_poor_post_rel "Below relative poverty threshold, post-transfer income"
 
 
 ********************************************************************************
 * Poverty indicators: anchored baseline threshold
 ********************************************************************************
 
-gen byte poor_pre_anchor = pre_disp_hh_income_equ < poverty_threshold_anchor if employed == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_anchor)
+gen byte iw_arop_pre_anchor = pre_disp_hh_income_equ < poverty_threshold_anchor if employed == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_anchor)
 
-gen byte poor_post_anchor = post_disp_hh_income_equ < poverty_threshold_anchor if employed == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_anchor)
+gen byte iw_arop_post_anchor = post_disp_hh_income_equ < poverty_threshold_anchor if employed == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_anchor)
 
-label variable poor_pre_anchor "Below anchored baseline poverty threshold, pre-transfer income"
+label variable iw_arop_pre_anchor "Below anchored baseline poverty threshold, pre-transfer income"
 
-label variable poor_post_anchor "Below anchored baseline poverty threshold, post-transfer income"
+label variable iw_arop_post_anchor "Below anchored baseline poverty threshold, post-transfer income"
 
 
 ********************************************************************************
 * Differences: reduction in poverty from pre- to post-transfer
 ********************************************************************************
 
-gen byte diff_rel = poor_pre_rel - poor_post_rel if employed == 1
-gen byte diff_anchor = poor_pre_anchor - poor_post_anchor if employed == 1
+gen byte diff_rel = iw_arop_pre_rel - iw_poor_post_rel if employed == 1
+gen byte diff_anchor = iw_arop_pre_anchor - iw_arop_post_anchor if employed == 1
 
 label variable diff_rel "Difference pre - post, relative threshold"
 label variable diff_anchor "Difference pre - post, anchored threshold"
@@ -174,8 +174,8 @@ label variable diff_anchor "Difference pre - post, anchored threshold"
 * Threshold effect: relative threshold vs anchored threshold
 ********************************************************************************
 
-gen byte threshold_effect_pre = poor_pre_rel - poor_pre_anchor if employed == 1
-gen byte threshold_effect_post = poor_post_rel - poor_post_anchor if employed == 1
+gen byte threshold_effect_pre = iw_arop_pre_rel - iw_arop_pre_anchor if employed == 1
+gen byte threshold_effect_post = iw_poor_post_rel - iw_arop_post_anchor if employed == 1
 gen byte threshold_effect_diff = diff_rel - diff_anchor if employed == 1
 
 label variable threshold_effect_pre  "Threshold effect pre"
