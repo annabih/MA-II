@@ -72,5 +72,42 @@ label variable pre_disp_hh_income_equ  "Pre-transfer disposable household income
 
 
 
+********************************************************************************
+* Poverty thresholds:
+* 1. Relative threshold by year and scenario
+* 2. Anchored threshold: baseline threshold applied to all scenarios
+********************************************************************************
 
+gen double poverty_threshold_rel = .
+gen double poverty_threshold_anchor = .
 
+levelsof year, local(years)
+levelsof scenario01, local(scenarios)
+
+********************************************************************************
+* 1. Relative / floating threshold: by year and scenario
+********************************************************************************
+
+foreach y of local years {
+    foreach s of local scenarios {
+
+        quietly _pctile post_disp_hh_income_equ [aw=dwt] if year == `y' & scenario01 == `s' & dwt > 0 & !missing(post_disp_hh_income_equ, dwt), p(50)
+
+        replace poverty_threshold_rel = r(r1) * 0.6 if year == `y' & scenario01 == `s'
+    }
+}
+
+********************************************************************************
+* 2. Anchored threshold: baseline threshold applied to all scenarios
+********************************************************************************
+
+foreach y of local years {
+
+    quietly _pctile post_disp_hh_income_equ [aw=dwt] if year == `y' & scenario01 == 0 & dwt > 0 & !missing(post_disp_hh_income_equ, dwt), p(50)
+
+    replace poverty_threshold_anchor = r(r1) * 0.6 if year == `y'
+}
+
+label variable poverty_threshold_rel "Relative poverty threshold: 60% median by year and scenario"
+
+label variable poverty_threshold_anchor "Anchored poverty threshold: baseline threshold applied to all scenarios"
