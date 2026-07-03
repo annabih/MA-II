@@ -33,10 +33,9 @@ label variable pre_disp_income  "Pre-transfer disposable income, pensions includ
 * Construct pre- and post-transfer disposable household income
 ********************************************************************************
 
-bysort idhh year: egen post_disp_hh_income = total(post_disp_income)
-bysort idhh year: egen pre_disp_hh_income = total(pre_disp_income)
+bysort scenario year idhh: egen double post_disp_hh_income = total(post_disp_income)
+bysort scenario year idhh: egen double pre_disp_hh_income  = total(pre_disp_income)
 
-* Labels
 label variable post_disp_hh_income "Post-transfer disposable household income"
 label variable pre_disp_hh_income  "Pre-transfer disposable household income, pensions included"
 
@@ -52,15 +51,14 @@ label variable pre_disp_hh_income  "Pre-transfer disposable household income, pe
 gen byte adult14   = dag >= 14 if !missing(dag)
 gen byte child_u14 = dag < 14  if !missing(dag)
 
-* Count household members by OECD age category
-bysort year idhh: egen n_adult14  = total(adult14)
-bysort year idhh: egen n_child_u14 = total(child_u14)
+* Count household members within each scenario-year-household
+bysort scenario year idhh: egen n_adult14  = total(adult14)
+bysort scenario year idhh: egen n_child_u14 = total(child_u14)
 
-* Construct modified OECD equivalence scale
+* Modified OECD scale
 gen double oecd_scale = 1 + 0.5 * (n_adult14 - 1) + 0.3 * n_child_u14 if n_adult14 >= 1
 
 label variable oecd_scale "OECD equivalence scale"
-
 
 ********************************************************************************
 * Equalised household income
@@ -69,7 +67,6 @@ label variable oecd_scale "OECD equivalence scale"
 gen double post_disp_hh_income_equ = post_disp_hh_income / oecd_scale
 gen double pre_disp_hh_income_equ  = max(pre_disp_hh_income / oecd_scale, 0)
 
-* Labels
 label variable post_disp_hh_income_equ "Post-transfer disposable household income, equalised"
 label variable pre_disp_hh_income_equ  "Pre-transfer disposable household income, equalised, pensions included"
 
