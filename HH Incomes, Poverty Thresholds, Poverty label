@@ -152,6 +152,15 @@ label variable poor_pre_anchor "Below anchored baseline poverty threshold, pre-t
 label variable poor_post_anchor "Below anchored baseline poverty threshold, post-transfer income"
 
 
+********************************************************************************
+* Differences: reduction in poverty from pre- to post-transfer
+********************************************************************************
+
+gen byte diff_rel = poor_pre_rel - poor_post_rel if employed == 1
+gen byte diff_anchor = poor_pre_anchor - poor_post_anchor if employed == 1
+
+label variable diff_rel "Difference pre - post, relative threshold"
+label variable diff_anchor "Difference pre - post, anchored threshold"
 
 
 save "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined_adjusted.dta", replace
