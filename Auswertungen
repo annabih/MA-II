@@ -33,3 +33,12 @@ table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(su
 *** % population numbers (18-64)
 *******************************************************************************************************************************************************************************************
 table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean poor_pre_rel) statistic(mean poor_post_rel) statistic(mean poor_pre_anchor) statistic(mean poor_post_anchor) nototals
+
+
+
+
+
+
+
+
+
