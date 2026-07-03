@@ -78,6 +78,14 @@ label variable pre_disp_hh_income_equ  "Pre-transfer disposable household income
 * 2. Anchored threshold: baseline threshold applied to all scenarios
 ********************************************************************************
 
+gen byte scenario01 = .
+replace scenario01 = 0 if scenario == "baseline"
+replace scenario01 = 1 if scenario == "policy"
+
+label define scenario01_lbl 0 "baseline" 1 "policy", replace
+label values scenario01 scenario01_lbl
+
+
 gen double poverty_threshold_rel = .
 gen double poverty_threshold_anchor = .
 
@@ -161,6 +169,18 @@ gen byte diff_anchor = poor_pre_anchor - poor_post_anchor if employed == 1
 
 label variable diff_rel "Difference pre - post, relative threshold"
 label variable diff_anchor "Difference pre - post, anchored threshold"
+
+********************************************************************************
+* Threshold effect: relative threshold vs anchored threshold
+********************************************************************************
+
+gen byte threshold_effect_pre = poor_pre_rel - poor_pre_anchor if employed == 1
+gen byte threshold_effect_post = poor_post_rel - poor_post_anchor if employed == 1
+gen byte threshold_effect_diff = diff_rel - diff_anchor if employed == 1
+
+label variable threshold_effect_pre  "Threshold effect pre"
+label variable threshold_effect_post "Threshold effect post"
+label variable threshold_effect_diff "Threshold effect diff"
 
 
 save "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined_adjusted.dta", replace
