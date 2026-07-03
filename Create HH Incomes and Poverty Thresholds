@@ -111,3 +111,7 @@ foreach y of local years {
 label variable poverty_threshold_rel "Relative poverty threshold: 60% median by year and scenario"
 
 label variable poverty_threshold_anchor "Anchored poverty threshold: baseline threshold applied to all scenarios"
+
+
+
+save "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined_adjusted.dta", replace
