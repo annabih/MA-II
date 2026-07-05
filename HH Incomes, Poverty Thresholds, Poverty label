@@ -13,7 +13,7 @@ use "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined.dta", clear
 ********************************************************************************
 
 * Convert variables with decimal comma to numeric
-destring yds ydses_o ils_dispy ils_ben ils_pen dag, replace dpcomma ignore(" ")
+destring yds ydses_o ils_dispy ils_ben ils_pen dag dwt, replace dpcomma ignore(" ")
 
 ********************************************************************************
 * Post- and pre-transfer disposable income, individual level
@@ -78,19 +78,11 @@ label variable pre_disp_hh_income_equ  "Pre-transfer disposable household income
 * 2. Anchored threshold: baseline threshold applied to all scenarios
 ********************************************************************************
 
-gen byte scenario01 = .
-replace scenario01 = 0 if scenario == "baseline"
-replace scenario01 = 1 if scenario == "policy"
-
-label define scenario01_lbl 0 "baseline" 1 "policy", replace
-label values scenario01 scenario01_lbl
-
-
 gen double poverty_threshold_rel = .
 gen double poverty_threshold_anchor = .
 
 levelsof year, local(years)
-levelsof scenario01, local(scenarios)
+levelsof scenario, local(scenarios)
 
 ********************************************************************************
 * 1. Relative / floating threshold: by year and scenario
@@ -98,10 +90,8 @@ levelsof scenario01, local(scenarios)
 
 foreach y of local years {
     foreach s of local scenarios {
-
-        quietly _pctile post_disp_hh_income_equ [aw=dwt] if year == `y' & scenario01 == `s' & dwt > 0 & !missing(post_disp_hh_income_equ, dwt), p(50)
-
-        replace poverty_threshold_rel = r(r1) * 0.6 if year == `y' & scenario01 == `s'
+        quietly _pctile post_disp_hh_income_equ [aw=dwt] if year == `y' & scenario == `s' & dwt > 0 & !missing(post_disp_hh_income_equ, dwt), p(50)
+        replace poverty_threshold_rel = r(r1) * 0.6 if year == `y' & scenario == `s'
     }
 }
 
@@ -110,14 +100,11 @@ foreach y of local years {
 ********************************************************************************
 
 foreach y of local years {
-
-    quietly _pctile post_disp_hh_income_equ [aw=dwt] if year == `y' & scenario01 == 0 & dwt > 0 & !missing(post_disp_hh_income_equ, dwt), p(50)
-
+    quietly _pctile post_disp_hh_income_equ [aw=dwt] if year == `y' & scenario == 0 & dwt > 0 & !missing(post_disp_hh_income_equ, dwt), p(50)
     replace poverty_threshold_anchor = r(r1) * 0.6 if year == `y'
 }
 
 label variable poverty_threshold_rel "Relative poverty threshold: 60% median by year and scenario"
-
 label variable poverty_threshold_anchor "Anchored poverty threshold: baseline threshold applied to all scenarios"
 
 
