@@ -33,3 +33,32 @@ table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(su
 *** % population numbers (18-64)
 *******************************************************************************************************************************************************************************************
 table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean iw_arop_pre_rel) statistic(mean iw_poor_post_rel) statistic(mean iw_arop_pre_anchor) statistic(mean iw_arop_post_anchor) nototals
+
+
+
+********************************************************************************
+* Average poverty gap among poor employed persons
+********************************************************************************
+
+table year scenario if employed == 1 [pw=dwt], statistic(mean gap_pre_rel) statistic(mean gap_post_rel) statistic(mean gap_pre_anchor) statistic(mean gap_post_anchor) nototals nformat(%12.2fc mean)
+
+********************************************************************************
+* Average poverty gap among poor employed persons, in % of threshold
+********************************************************************************
+
+table year scenario if employed == 1 [pw=dwt], statistic(mean gap_pre_rel_pct) statistic(mean gap_post_rel_pct) statistic(mean gap_pre_anchor_pct) statistic(mean gap_post_anchor_pct) nototals nformat(%12.2fc mean)
+
+
+********************************************************************************
+* Average poverty gap among poor employed persons, 18-64
+********************************************************************************
+
+table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean gap_pre_rel) statistic(mean gap_post_rel) statistic(mean gap_pre_anchor) statistic(mean gap_post_anchor) nototals nformat(%12.2fc mean)
+
+********************************************************************************
+* Average poverty gap among poor employed persons, 18-64, in % of threshold
+********************************************************************************
+
+table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean gap_pre_rel_pct) statistic(mean gap_post_rel_pct) statistic(mean gap_pre_anchor_pct) statistic(mean gap_post_anchor_pct) nototals nformat(%12.2fc mean)
+
+
