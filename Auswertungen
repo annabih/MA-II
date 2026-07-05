@@ -1,14 +1,12 @@
 *******************************************************************************************************************************************************************************************
 *** Titel: Poverty evaluation
-*** Aim: Counts and percentages below poverty thresholds (in-work and total population)
+*** Aim: Counts and percentages of employed persons below poverty thresholds
 *******************************************************************************************************************************************************************************************
+
 clear all
 set more off
-use "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined_adjusted.dta", clear
 
-*******************************************************************************************************************************************************************************************
-*** IN-WORK POVERTY (employed persons)
-*******************************************************************************************************************************************************************************************
+use "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined_adjusted.dta", clear
 
 *** N numbers
 *******************************************************************************************************************************************************************************************
@@ -35,21 +33,3 @@ table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(su
 *** % population numbers (18-64)
 *******************************************************************************************************************************************************************************************
 table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean iw_arop_pre_rel) statistic(mean iw_poor_post_rel) statistic(mean iw_arop_pre_anchor) statistic(mean iw_arop_post_anchor) nototals
-
-
-
-*******************************************************************************************************************************************************************************************
-*** AT-RISK-OF-POVERTY, TOTAL POPULATION
-*******************************************************************************************************************************************************************************************
-
-*** N numbers
-*******************************************************************************************************************************************************************************************
-table year scenario, statistic(sum arop_pre_rel) statistic(sum arop_post_rel) statistic(sum arop_diff_rel) statistic(sum arop_pre_anchor) statistic(sum arop_post_anchor) statistic(sum arop_diff_anchor) statistic(sum arop_threshold_effect_pre) statistic(sum arop_threshold_effect_post) nototals
-
-*** Weighted population numbers
-*******************************************************************************************************************************************************************************************
-table year scenario [pw=dwt], statistic(sum arop_pre_rel) statistic(sum arop_post_rel) statistic(sum arop_diff_rel) statistic(sum arop_pre_anchor) statistic(sum arop_post_anchor) statistic(sum arop_diff_anchor) statistic(sum arop_threshold_effect_pre) statistic(sum arop_threshold_effect_post) nototals nformat(%12.0fc sum)
-
-*** % population numbers
-*******************************************************************************************************************************************************************************************
-table year scenario [pw=dwt], statistic(mean arop_pre_rel) statistic(mean arop_post_rel) statistic(mean arop_pre_anchor)
