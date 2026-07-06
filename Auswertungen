@@ -62,3 +62,50 @@ table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(me
 table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean gap_pre_rel_pct) statistic(mean gap_post_rel_pct) statistic(mean gap_pre_anchor_pct) statistic(mean gap_post_anchor_pct) nototals nformat(%12.2fc mean)
 
 
+
+*******************************************************************************************************************************************************************************************
+*** PART 1: Average distance to threshold, employed (mean poverty gap among the poor, in euros)
+*******************************************************************************************************************************************************************************************
+ 
+*** All employed
+table year scenario if employed == 1 [pw=dwt], statistic(mean gap_pre_rel) statistic(mean gap_post_rel) statistic(mean gap_pre_anchor) statistic(mean gap_post_anchor) nototals nformat(%12.2fc mean)
+ 
+*** Employed 18-64
+table year scenario if employed == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean gap_pre_rel) statistic(mean gap_post_rel) statistic(mean gap_pre_anchor) statistic(mean gap_post_anchor) nototals nformat(%12.2fc mean)
+ 
+ 
+*******************************************************************************************************************************************************************************************
+*** PART 2: Distance to threshold by percentiles, employed (percentiles of the poverty gap among the poor, in euros)
+*** Percentiles use [aw=dwt]; weighted percentile point estimates equal those under pweights (table does not allow pweights with percentile statistics)
+*******************************************************************************************************************************************************************************************
+ 
+*** All employed
+table year scenario if employed == 1 [aw=dwt], statistic(p10 gap_pre_rel) statistic(p25 gap_pre_rel) statistic(p50 gap_pre_rel) statistic(p75 gap_pre_rel) statistic(p90 gap_pre_rel) nototals nformat(%12.2fc p10 p25 p50 p75 p90)
+table year scenario if employed == 1 [aw=dwt], statistic(p10 gap_post_rel) statistic(p25 gap_post_rel) statistic(p50 gap_post_rel) statistic(p75 gap_post_rel) statistic(p90 gap_post_rel) nototals nformat(%12.2fc p10 p25 p50 p75 p90)
+table year scenario if employed == 1 [aw=dwt], statistic(p10 gap_pre_anchor) statistic(p25 gap_pre_anchor) statistic(p50 gap_pre_anchor) statistic(p75 gap_pre_anchor) statistic(p90 gap_pre_anchor) nototals nformat(%12.2fc p10 p25 p50 p75 p90)
+table year scenario if employed == 1 [aw=dwt], statistic(p10 gap_post_anchor) statistic(p25 gap_post_anchor) statistic(p50 gap_post_anchor) statistic(p75 gap_post_anchor) statistic(p90 gap_post_anchor) nototals nformat(%12.2fc p10 p25 p50 p75 p90)
+ 
+*** Employed 18-64
+table year scenario if employed == 1 & inrange(dag,18,64) [aw=dwt], statistic(p10 gap_pre_rel) statistic(p25 gap_pre_rel) statistic(p50 gap_pre_rel) statistic(p75 gap_pre_rel) statistic(p90 gap_pre_rel) nototals nformat(%12.2fc p10 p25 p50 p75 p90)
+table year scenario if employed == 1 & inrange(dag,18,64) [aw=dwt], statistic(p10 gap_post_rel) statistic(p25 gap_post_rel) statistic(p50 gap_post_rel) statistic(p75 gap_post_rel) statistic(p90 gap_post_rel) nototals nformat(%12.2fc p10 p25 p50 p75 p90)
+table year scenario if employed == 1 & inrange(dag,18,64) [aw=dwt], statistic(p10 gap_pre_anchor) statistic(p25 gap_pre_anchor) statistic(p50 gap_pre_anchor) statistic(p75 gap_pre_anchor) statistic(p90 gap_pre_anchor) nototals nformat(%12.2fc p10 p25 p50 p75 p90)
+table year scenario if employed == 1 & inrange(dag,18,64) [aw=dwt], statistic(p10 gap_post_anchor) statistic(p25 gap_post_anchor) statistic(p50 gap_post_anchor) statistic(p75 gap_post_anchor) statistic(p90 gap_post_anchor) nototals nformat(%12.2fc p10 p25 p50 p75 p90)
+ 
+ 
+*******************************************************************************************************************************************************************************************
+*** PART 3: Distribution of the poor across euro bands below the threshold, employed (share of persons below the threshold in each band, in %)
+*** The six band shares within one definition sum to 100
+*******************************************************************************************************************************************************************************************
+ 
+*** All employed
+table year scenario if employed == 1 & iw_arop_pre_rel == 1 [pw=dwt], statistic(mean pct_b1_pre_rel) statistic(mean pct_b2_pre_rel) statistic(mean pct_b3_pre_rel) statistic(mean pct_b4_pre_rel) statistic(mean pct_b5_pre_rel) statistic(mean pct_b6_pre_rel) nototals nformat(%12.2fc mean)
+table year scenario if employed == 1 & iw_poor_post_rel == 1 [pw=dwt], statistic(mean pct_b1_post_rel) statistic(mean pct_b2_post_rel) statistic(mean pct_b3_post_rel) statistic(mean pct_b4_post_rel) statistic(mean pct_b5_post_rel) statistic(mean pct_b6_post_rel) nototals nformat(%12.2fc mean)
+table year scenario if employed == 1 & iw_arop_pre_anchor == 1 [pw=dwt], statistic(mean pct_b1_pre_anchor) statistic(mean pct_b2_pre_anchor) statistic(mean pct_b3_pre_anchor) statistic(mean pct_b4_pre_anchor) statistic(mean pct_b5_pre_anchor) statistic(mean pct_b6_pre_anchor) nototals nformat(%12.2fc mean)
+table year scenario if employed == 1 & iw_arop_post_anchor == 1 [pw=dwt], statistic(mean pct_b1_post_anchor) statistic(mean pct_b2_post_anchor) statistic(mean pct_b3_post_anchor) statistic(mean pct_b4_post_anchor) statistic(mean pct_b5_post_anchor) statistic(mean pct_b6_post_anchor) nototals nformat(%12.2fc mean)
+ 
+*** Employed 18-64
+table year scenario if employed == 1 & iw_arop_pre_rel == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean pct_b1_pre_rel) statistic(mean pct_b2_pre_rel) statistic(mean pct_b3_pre_rel) statistic(mean pct_b4_pre_rel) statistic(mean pct_b5_pre_rel) statistic(mean pct_b6_pre_rel) nototals nformat(%12.2fc mean)
+table year scenario if employed == 1 & iw_poor_post_rel == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean pct_b1_post_rel) statistic(mean pct_b2_post_rel) statistic(mean pct_b3_post_rel) statistic(mean pct_b4_post_rel) statistic(mean pct_b5_post_rel) statistic(mean pct_b6_post_rel) nototals nformat(%12.2fc mean)
+table year scenario if employed == 1 & iw_arop_pre_anchor == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean pct_b1_pre_anchor) statistic(mean pct_b2_pre_anchor) statistic(mean pct_b3_pre_anchor) statistic(mean pct_b4_pre_anchor) statistic(mean pct_b5_pre_anchor) statistic(mean pct_b6_pre_anchor) nototals nformat(%12.2fc mean)
+table year scenario if employed == 1 & iw_arop_post_anchor == 1 & inrange(dag,18,64) [pw=dwt], statistic(mean pct_b1_post_anchor) statistic(mean pct_b2_post_anchor) statistic(mean pct_b3_post_anchor) statistic(mean pct_b4_post_anchor) statistic(mean pct_b5_post_anchor) statistic(mean pct_b6_post_anchor) nototals nformat(%12.2fc mean)
+ 
