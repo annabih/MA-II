@@ -278,6 +278,37 @@ label variable gap_pre_anchor_all_pct "Poverty gap all employed in %, pre-transf
 label variable gap_post_anchor_all_pct "Poverty gap all employed in %, post-transfer, anchored threshold"
 
 
+********************************************************************************
+* Euro bands below the threshold (distance = threshold - equalised income)
+* Bands: (0,100], (100,250], (250,500], (500,750], (750,1000], >1000
+* Amounts are in the income unit of the EUROMOD output (monthly by default)
+* This block can be moved into the construction do-file and re-saved if you want it persistent
+********************************************************************************
+ 
+label define bandlbl 1 "(0,100]" 2 "(100,250]" 3 "(250,500]" 4 "(500,750]" 5 "(750,1000]" 6 ">1000"
+ 
+foreach g in pre_rel post_rel pre_anchor post_anchor {
+    gen byte band_`g' = .
+    replace band_`g' = 1 if gap_`g' > 0 & gap_`g' <= 100 & !missing(gap_`g')
+    replace band_`g' = 2 if gap_`g' > 100 & gap_`g' <= 250 & !missing(gap_`g')
+    replace band_`g' = 3 if gap_`g' > 250 & gap_`g' <= 500 & !missing(gap_`g')
+    replace band_`g' = 4 if gap_`g' > 500 & gap_`g' <= 750 & !missing(gap_`g')
+    replace band_`g' = 5 if gap_`g' > 750 & gap_`g' <= 1000 & !missing(gap_`g')
+    replace band_`g' = 6 if gap_`g' > 1000 & !missing(gap_`g')
+    label values band_`g' bandlbl
+    label variable band_`g' "Euro distance below threshold, `g'"
+    gen byte pct_b1_`g' = 100 * (band_`g' == 1) if !missing(band_`g')
+    gen byte pct_b2_`g' = 100 * (band_`g' == 2) if !missing(band_`g')
+    gen byte pct_b3_`g' = 100 * (band_`g' == 3) if !missing(band_`g')
+    gen byte pct_b4_`g' = 100 * (band_`g' == 4) if !missing(band_`g')
+    gen byte pct_b5_`g' = 100 * (band_`g' == 5) if !missing(band_`g')
+    gen byte pct_b6_`g' = 100 * (band_`g' == 6) if !missing(band_`g')
+}
+
+
+
+
+
 save "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined_adjusted.dta", replace
 
 
