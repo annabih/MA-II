@@ -208,7 +208,74 @@ label variable arop_threshold_effect_post "AROP threshold effect post"
 label variable arop_threshold_effect_diff "AROP threshold effect diff"
 
 
+********************************************************************************
+* 1. Gap only among poor employed persons
+* Positive value = income below threshold
+********************************************************************************
 
+gen double gap_pre_rel = poverty_threshold_rel - pre_disp_hh_income_equ if employed == 1 & iw_arop_pre_rel == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_rel)
+
+gen double gap_post_rel = poverty_threshold_rel - post_disp_hh_income_equ if employed == 1 & iw_poor_post_rel == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_rel)
+
+gen double gap_pre_anchor = poverty_threshold_anchor - pre_disp_hh_income_equ if employed == 1 & iw_arop_pre_anchor == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_anchor)
+
+gen double gap_post_anchor = poverty_threshold_anchor - post_disp_hh_income_equ if employed == 1 & iw_arop_post_anchor == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_anchor)
+
+
+********************************************************************************
+* 2. Gap over all employed persons
+* Non-poor employed persons receive gap = 0
+********************************************************************************
+
+gen double gap_pre_rel_all = max(poverty_threshold_rel - pre_disp_hh_income_equ, 0) if employed == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_rel)
+
+gen double gap_post_rel_all = max(poverty_threshold_rel - post_disp_hh_income_equ, 0) if employed == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_rel)
+
+gen double gap_pre_anchor_all = max(poverty_threshold_anchor - pre_disp_hh_income_equ, 0) if employed == 1 & !missing(pre_disp_hh_income_equ, poverty_threshold_anchor)
+
+gen double gap_post_anchor_all = max(poverty_threshold_anchor - post_disp_hh_income_equ, 0) if employed == 1 & !missing(post_disp_hh_income_equ, poverty_threshold_anchor)
+
+
+********************************************************************************
+* 3. Poverty gap as percentage of threshold
+********************************************************************************
+
+gen double gap_pre_rel_pct = 100 * gap_pre_rel / poverty_threshold_rel
+gen double gap_post_rel_pct = 100 * gap_post_rel / poverty_threshold_rel
+
+gen double gap_pre_anchor_pct = 100 * gap_pre_anchor / poverty_threshold_anchor
+gen double gap_post_anchor_pct = 100 * gap_post_anchor / poverty_threshold_anchor
+
+gen double gap_pre_rel_all_pct = 100 * gap_pre_rel_all / poverty_threshold_rel
+gen double gap_post_rel_all_pct = 100 * gap_post_rel_all / poverty_threshold_rel
+
+gen double gap_pre_anchor_all_pct = 100 * gap_pre_anchor_all / poverty_threshold_anchor
+gen double gap_post_anchor_all_pct = 100 * gap_post_anchor_all / poverty_threshold_anchor
+
+
+********************************************************************************
+* Labels
+********************************************************************************
+
+label variable gap_pre_rel "Mean poverty gap among poor employed, pre-transfer, relative threshold"
+label variable gap_post_rel "Mean poverty gap among poor employed, post-transfer, relative threshold"
+label variable gap_pre_anchor "Mean poverty gap among poor employed, pre-transfer, anchored threshold"
+label variable gap_post_anchor "Mean poverty gap among poor employed, post-transfer, anchored threshold"
+
+label variable gap_pre_rel_all "Mean poverty gap all employed, pre-transfer, relative threshold"
+label variable gap_post_rel_all "Mean poverty gap all employed, post-transfer, relative threshold"
+label variable gap_pre_anchor_all "Mean poverty gap all employed, pre-transfer, anchored threshold"
+label variable gap_post_anchor_all "Mean poverty gap all employed, post-transfer, anchored threshold"
+
+label variable gap_pre_rel_pct "Poverty gap among poor employed in %, pre-transfer, relative threshold"
+label variable gap_post_rel_pct "Poverty gap among poor employed in %, post-transfer, relative threshold"
+label variable gap_pre_anchor_pct "Poverty gap among poor employed in %, pre-transfer, anchored threshold"
+label variable gap_post_anchor_pct "Poverty gap among poor employed in %, post-transfer, anchored threshold"
+
+label variable gap_pre_rel_all_pct "Poverty gap all employed in %, pre-transfer, relative threshold"
+label variable gap_post_rel_all_pct "Poverty gap all employed in %, post-transfer, relative threshold"
+label variable gap_pre_anchor_all_pct "Poverty gap all employed in %, pre-transfer, anchored threshold"
+label variable gap_post_anchor_all_pct "Poverty gap all employed in %, post-transfer, anchored threshold"
 
 
 save "Y:\Desktop\USB\MA_II\EUROMOD_baseline_vs_policy_combined_adjusted.dta", replace
