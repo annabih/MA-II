@@ -2,7 +2,7 @@
 use "Y:\Desktop\USB\MA_II\EUROMOD_Baseline\EUROMOD_baseline_output.dta", clear
 
 * Policy-Datensatz anhängen und Kennvariable erzeugen
-append using "Y:\Desktop\USB\MA_II\EUROMOD_Policy\EUROMOD_baseline_policy_output.dta", generate(scenario)
+append using "Y:\Desktop\USB\MA_II\EUROMOD_Policy\EUROMOD_policy_output.dta", generate(scenario)
 
 * Variable beschriften
 label define scen 0 "baseline" 1 "policy"
